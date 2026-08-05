@@ -626,14 +626,68 @@ const catLabels = {
   '📚 Pendidikan': 'Pendidikan', '📦 Lainnya': 'Lainnya'
 };
 
-// ── localStorage ──
+// ── Data layer (API or localStorage) ──
+var API = null;
+
+function detectAPI() {
+  // Only try API on same origin (not github.io)
+  if (window.location.hostname.includes('github.io')) return false;
+  return fetch('/api/expenses').then(function(r){
+    if (r.ok) { API = window.location.origin; return true; }
+    return false;
+  })["catch"](function(){ return false; });
+}
+
 function loadData() {
   expenses = JSON.parse(localStorage.getItem('catatan_expenses') || '[]');
   budgets = JSON.parse(localStorage.getItem('catatan_budgets') || '{}');
-  renderAll();
+  if (API) {
+    fetch(API + '/api/expenses').then(function(r){ return r.json(); }).then(function(data){
+      expenses = data || [];
+      return fetch(API + '/api/budgets');
+    }).then(function(r){ return r.json(); }).then(function(data){
+      budgets = data || {};
+      renderAll();
+    })["catch"](function(){
+      // Fallback to localStorage if API fails mid-session
+      API = null;
+      loadData();
+    });
+  } else {
+    renderAll();
+  }
 }
-function saveExpenses() { localStorage.setItem('catatan_expenses', JSON.stringify(expenses)); }
-function saveBudgets() { localStorage.setItem('catatan_budgets', JSON.stringify(budgets)); }
+
+function saveExpenses() {
+  localStorage.setItem('catatan_expenses', JSON.stringify(expenses));
+  if (API) {
+    // Already saved via API in addExpense/deleteExpense, this is backup
+  }
+}
+function saveBudgets() {
+  localStorage.setItem('catatan_budgets', JSON.stringify(budgets));
+  if (API) {
+    // Already saved via API in saveBudget, this is backup
+  }
+}
+
+function apiPostExpense(exp) {
+  return fetch(API + '/api/expenses', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({amount: exp.amount, category: exp.category, date: exp.date, desc: exp.desc, monthKey: exp.monthKey})
+  }).then(function(r){ return r.json(); }).then(function(data){ exp.id = data.expense.id; });
+}
+
+function apiDeleteExpense(id) {
+  return fetch(API + '/api/expenses/' + id, { method: 'DELETE' });
+}
+
+function apiSaveBudget(month, amount) {
+  return fetch(API + '/api/budgets', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({month: month, amount: amount})
+  });
+}
 
 function formatRp(n) { return 'Rp ' + n.toLocaleString('id-ID'); }
 function getMonthKey(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
@@ -874,25 +928,51 @@ function addExpense() {
   var amount = parseInt(amtEl.value);
   if (!amount || amount <= 0) { showToast('Jumlah belum diisi'); amtEl.focus(); return; }
 
-  expenses.push({
+  var exp = {
     id: Date.now(),
     amount: amount,
     category: cat,
     date: dateVal,
     desc: desc,
     monthKey: dateVal.substring(0,7)
-  });
-  saveExpenses();
-  amtEl.value = ''; document.getElementById('desc').value = '';
-  amtEl.focus(); activeFilter = 'all'; loadData();
-  showToast('Tercatat');
+  };
+
+  if (API) {
+    apiPostExpense(exp).then(function(){
+      expenses.push(exp);
+      saveExpenses();
+      amtEl.value = ''; document.getElementById('desc').value = '';
+      amtEl.focus(); activeFilter = 'all'; loadData();
+      showToast('Tercatat');
+    })["catch"](function(e){
+      showToast('Gagal sync, coba lagi');
+      console.error(e);
+    });
+  } else {
+    expenses.push(exp);
+    saveExpenses();
+    amtEl.value = ''; document.getElementById('desc').value = '';
+    amtEl.focus(); activeFilter = 'all'; loadData();
+    showToast('Tercatat');
+  }
 }
 
 function deleteExpense(id) {
   if (!confirm('Hapus catatan ini?')) return;
-  expenses = expenses.filter(function(e){ return e.id !== id; });
-  saveExpenses();
-  loadData(); showToast('Terhapus');
+  if (API) {
+    apiDeleteExpense(id).then(function(){
+      expenses = expenses.filter(function(e){ return e.id !== id; });
+      saveExpenses();
+      loadData(); showToast('Terhapus');
+    })["catch"](function(e){
+      showToast('Gagal sync, coba lagi');
+      console.error(e);
+    });
+  } else {
+    expenses = expenses.filter(function(e){ return e.id !== id; });
+    saveExpenses();
+    loadData(); showToast('Terhapus');
+  }
 }
 
 function saveBudget() {
@@ -900,8 +980,19 @@ function saveBudget() {
   var key = getMonthKey(currentDate);
   budgets[key] = val;
   saveBudgets();
-  loadData();
-  showToast(val > 0 ? 'Budget disimpan' : 'Budget direset');
+  if (API) {
+    apiSaveBudget(key, val).then(function(){
+      loadData();
+      showToast(val > 0 ? 'Budget disimpan' : 'Budget direset');
+    })["catch"](function(e){
+      loadData();
+      showToast(val > 0 ? 'Budget disimpan (lokal)' : 'Budget direset');
+      console.error(e);
+    });
+  } else {
+    loadData();
+    showToast(val > 0 ? 'Budget disimpan' : 'Budget direset');
+  }
 }
 
 function prevMonth() {
@@ -917,7 +1008,15 @@ document.getElementById('date').value = new Date().toISOString().split('T')[0];
 document.getElementById('amount').addEventListener('keydown', function(e){
   if (e.key === 'Enter') addExpense();
 });
-loadData();
+
+detectAPI().then(function(hasAPI){
+  if (hasAPI) {
+    console.log('Mode: API sync (' + API + ')');
+  } else {
+    console.log('Mode: localStorage');
+  }
+  loadData();
+});
 </script>
 </body>
 </html>

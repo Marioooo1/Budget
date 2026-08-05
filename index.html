@@ -11,249 +11,284 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --slip:    #FEFCF8;
-  --ink:     #1F1D1A;
-  --pencil:  #8B8680;
-  --rule:    #EDE8E0;
-  --rule-soft: #F4F1EA;
-  --red:     #D64045;
+  --bg:      #F4F7FA;
+  --surface: #FFFFFF;
+  --ink:     #1C2130;
+  --muted:   #7B8296;
+  --border:  #E4E8F0;
+  --navy:    #1C2130;
   --green:   #1B8C5E;
-  --mono:    'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+  --green-bg:#E8F5EF;
+  --orange:  #E8853B;
+  --orange-bg:#FFF4EB;
+  --red:     #D64045;
+  --red-bg:  #FFF0F0;
+  --blue:    #3B6EF0;
+  --blue-bg: #EEF3FF;
+  --purple:  #6C47FF;
+  --purple-bg:#F3EFFF;
+  --mono:    'JetBrains Mono', 'Cascadia Code', monospace;
   --sans:    'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  --radius:  12px;
+  --radius-sm: 8px;
 }
 
-html { background: var(--slip); }
+html { background: var(--bg); }
 
 body {
   font-family: var(--sans);
-  background: var(--slip);
+  background: var(--bg);
   color: var(--ink);
   min-height: 100vh;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 24px);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Receipt Header ── */
+/* ── Header ── */
 header {
-  background: var(--slip);
-  padding: 24px 20px 20px;
+  background: var(--navy);
+  color: #fff;
+  padding: 20px 20px 28px;
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 1px solid var(--rule);
 }
 
-.header-row {
+.header-top {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 22px;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
-/* Brand — understated, like a shop stamp */
 .brand {
   font-family: var(--mono);
-  font-size: 0.62rem;
+  font-size: 0.65rem;
   font-weight: 600;
-  color: var(--pencil);
+  color: rgba(255,255,255,0.5);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
 }
-.brand span { color: var(--ink); }
+.brand b { color: #fff; font-weight: 700; }
 
-/* Month nav — thin, monospaced */
 .month-nav {
   display: flex;
   align-items: center;
-  gap: 1px;
+  gap: 0;
   font-family: var(--mono);
   font-size: 0.72rem;
   font-weight: 500;
-  color: var(--pencil);
-  letter-spacing: 0.02em;
+  background: rgba(255,255,255,0.08);
+  border-radius: 50px;
+  padding: 2px;
 }
 .month-nav button {
   background: none;
   border: none;
-  color: var(--ink);
-  width: 28px;
-  height: 28px;
+  color: rgba(255,255,255,0.7);
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--mono);
-  transition: background 0.12s;
+  transition: all 0.15s;
 }
-.month-nav button:hover { background: var(--rule-soft); }
+.month-nav button:hover { background: rgba(255,255,255,0.15); color: #fff; }
 .month-nav .month-label {
   min-width: 124px;
   text-align: center;
-  color: var(--ink);
+  color: #fff;
   font-weight: 600;
 }
 
-/* Hero — the total, like a calculator display */
-.hero-total {
-  text-align: center;
-}
-.hero-total .eyebrow {
-  font-size: 0.62rem;
-  font-family: var(--mono);
-  color: var(--pencil);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin-bottom: 4px;
-}
-.hero-total .amount {
-  font-family: var(--mono);
-  font-size: clamp(2.2rem, 7vw, 3.2rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  color: var(--ink);
-}
-.hero-total .amount.tick {
-  animation: calcTick 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-@keyframes calcTick {
-  0%   { opacity: 0.3; transform: translateY(-4px); }
-  40%  { opacity: 1;   transform: translateY(1px); }
-  70%  { opacity: 0.9; }
-  100% { opacity: 1;   transform: translateY(0); }
+/* Hero — total + daily budget */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
-/* Budget line — thin ink rule with subtle track */
-.budget-track {
-  margin: 14px auto 0;
-  max-width: 320px;
+.hero-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  padding: 16px;
+  backdrop-filter: blur(4px);
 }
-.budget-track .rail {
-  height: 2px;
-  background: var(--rule);
-  border-radius: 2px;
+.hero-card .h-label {
+  font-size: 0.62rem;
+  font-family: var(--mono);
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+.hero-card .h-amount {
+  font-family: var(--mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.hero-card.total .h-amount { font-size: 1.6rem; }
+.hero-card.daily { background: rgba(27,140,94,0.2); border-color: rgba(27,140,94,0.35); }
+.hero-card.daily .h-amount { color: #5BECAD; }
+
+/* Budget bar */
+.budget-bar-wrap {
+  margin-top: 16px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 50px;
+  height: 6px;
   overflow: hidden;
 }
-.budget-track .fill {
+.budget-bar-fill {
   height: 100%;
-  background: var(--ink);
-  border-radius: 2px;
-  transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  background: #fff;
+  border-radius: 50px;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.budget-track .fill.over { background: var(--red); }
-.budget-track .info {
+.budget-bar-wrap .info-row {
   display: flex;
   justify-content: space-between;
-  margin-top: 5px;
-  font-size: 0.64rem;
+  margin-top: 6px;
+  font-size: 0.62rem;
   font-family: var(--mono);
-  color: var(--pencil);
+  color: rgba(255,255,255,0.5);
 }
 
 /* ── Main ── */
 main {
-  max-width: 560px;
+  max-width: 600px;
   margin: 0 auto;
-  padding: 20px 16px;
+  padding: 18px 16px;
 }
 
-/* ── Quick stats ── */
-.quick-stats {
+/* Summary row */
+.summary-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  margin-bottom: 28px;
+  gap: 10px;
+  margin-bottom: 22px;
 }
-.quick-stat {
-  padding: 12px 0;
-  text-align: center;
+.summary-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
-.quick-stat + .quick-stat {
-  border-left: 1px solid var(--rule);
+.summary-card .s-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
 }
-.quick-stat .val {
+.summary-card .s-val {
   font-family: var(--mono);
-  font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1.05rem;
   letter-spacing: -0.02em;
 }
-.quick-stat .lbl {
-  font-size: 0.62rem;
-  color: var(--pencil);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+.summary-card .s-lbl {
+  font-size: 0.65rem;
+  color: var(--muted);
   margin-top: 2px;
-  font-family: var(--mono);
   font-weight: 500;
 }
 
-/* ── Section rule ── */
-.section-rule {
-  border: none;
-  border-top: 1px solid var(--rule);
-  margin: 0 0 18px;
+/* Section */
+.section-label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
 }
 
-.section-eyebrow {
+/* ── Daily Budget Insight ── */
+.insight-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 22px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.insight-card.good { border-left: 4px solid var(--green); }
+.insight-card.warn { border-left: 4px solid var(--orange); }
+.insight-card.bad  { border-left: 4px solid var(--red); }
+.insight-card .i-head {
   font-family: var(--mono);
-  font-size: 0.6rem;
-  font-weight: 600;
-  color: var(--pencil);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin-bottom: 8px;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+.insight-card .i-big {
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.insight-card .i-sub {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 4px;
+  line-height: 1.4;
 }
 
 /* ── Form slab ── */
 .form-slab {
-  background: var(--slip);
-  border: 1px solid var(--rule);
-  border-left: none;
-  border-right: none;
-  padding: 16px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
   margin-bottom: 22px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
-.form-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-}
+.form-row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
 .form-row:last-child { margin-bottom: 0; }
-.field {
-  flex: 1;
-  min-width: 100px;
-}
+.field { flex: 1; min-width: 100px; }
 .field label {
   display: block;
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 600;
-  color: var(--pencil);
+  color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   margin-bottom: 4px;
   font-family: var(--mono);
 }
-.field input,
-.field select {
+.field input, .field select {
   width: 100%;
-  padding: 9px 0 7px;
-  border: none;
-  border-bottom: 1.5px solid var(--rule);
-  border-radius: 0;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
   font-size: 0.88rem;
   font-family: var(--sans);
-  background: transparent;
+  background: #F9FAFC;
   color: var(--ink);
-  transition: border-color 0.15s;
+  transition: all 0.15s;
 }
-.field input::placeholder { color: var(--pencil); opacity: 0.5; }
-.field input:focus,
-.field select:focus {
+.field input::placeholder { color: var(--muted); opacity: 0.5; }
+.field input:focus, .field select:focus {
   outline: none;
-  border-bottom-color: var(--ink);
+  border-color: var(--blue);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(59,110,240,0.08);
 }
 
 .btn {
@@ -262,10 +297,9 @@ main {
   justify-content: center;
   gap: 5px;
   padding: 10px 18px;
-  border: 1.5px solid var(--ink);
-  background: transparent;
-  color: var(--ink);
-  font-size: 0.78rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
   font-weight: 600;
   font-family: var(--sans);
   cursor: pointer;
@@ -274,19 +308,17 @@ main {
 }
 .btn:active { transform: scale(0.97); }
 .btn-primary {
-  background: var(--ink);
-  color: var(--slip);
+  background: var(--navy);
+  color: #fff;
   width: 100%;
   padding: 12px;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.82rem;
   font-family: var(--mono);
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 12px rgba(28,33,48,0.2);
 }
-.btn-primary:hover { background: #2F2D29; }
-.btn-sm { padding: 6px 14px; font-size: 0.68rem; width: auto; font-family: var(--mono); }
-
-/* Budget row */
+.btn-primary:hover { background: #2D3348; }
+.btn-sm { padding: 7px 16px; font-size: 0.68rem; width: auto; font-family: var(--mono); background: var(--navy); color: #fff; }
 .budget-row { display: flex; gap: 8px; align-items: end; }
 .budget-row .field { flex: 1; }
 
@@ -295,165 +327,141 @@ main {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   overflow-x: auto;
   scrollbar-width: none;
 }
 .pill-strip::-webkit-scrollbar { display: none; }
 .pill {
-  padding: 4px 10px;
-  font-size: 0.65rem;
+  padding: 5px 12px;
+  border-radius: 50px;
+  font-size: 0.66rem;
   font-weight: 600;
   font-family: var(--mono);
   cursor: pointer;
   white-space: nowrap;
-  border: 1px solid var(--rule);
-  background: transparent;
-  color: var(--pencil);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
   transition: all 0.12s;
-  letter-spacing: 0.02em;
 }
-.pill:hover { border-color: var(--ink); color: var(--ink); }
+.pill:hover { border-color: var(--blue); color: var(--blue); }
 .pill.active {
-  background: var(--ink);
-  color: var(--slip);
-  border-color: var(--ink);
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
 }
 
-/* ── Expense — receipt-style line items ── */
-.expense-group { margin-bottom: 16px; }
-
+/* ── Expense list ── */
+.expense-group { margin-bottom: 14px; }
 .expense-date-head {
   font-family: var(--mono);
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   font-weight: 600;
-  color: var(--pencil);
+  color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 4px;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
   padding: 0 2px;
 }
 
 .expense-list {
-  border-top: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
 }
-
 .expense-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 0;
+  padding: 12px 14px;
   transition: background 0.1s;
 }
-.expense-row + .expense-row { border-top: 1px solid var(--rule-soft); }
-.expense-row:nth-child(even) { background: rgba(244,241,234,0.4); }
-.expense-row:active { background: var(--rule); }
+.expense-row + .expense-row { border-top: 1px solid var(--border); }
+.expense-row:active { background: #F8F9FC; }
 
 .expense-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px; height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
-  margin-left: 2px;
 }
 .expense-body { flex: 1; min-width: 0; }
 .expense-body .e-desc {
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: -0.01em;
 }
 .expense-body .e-meta {
-  font-size: 0.62rem;
-  color: var(--pencil);
+  font-size: 0.65rem;
+  color: var(--muted);
   font-family: var(--mono);
   margin-top: 1px;
 }
 .expense-amt {
   font-family: var(--mono);
   font-weight: 600;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   white-space: nowrap;
   letter-spacing: -0.02em;
 }
 .expense-del {
   background: none;
   border: none;
-  color: var(--pencil);
+  color: var(--muted);
   cursor: pointer;
   padding: 4px 6px;
-  font-size: 1rem;
+  font-size: 1.1rem;
   line-height: 1;
   transition: color 0.12s;
   flex-shrink: 0;
-  font-family: var(--mono);
-  font-weight: 300;
+  border-radius: 50%;
+  width: 28px; height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.expense-del:hover { color: var(--red); }
+.expense-del:hover { color: var(--red); background: var(--red-bg); }
 
 /* ── Breakdown ── */
-.breakdown-list {
-  border-top: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
+.breakdown-slab {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 22px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
 }
 .breakdown-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 0;
+  gap: 10px;
+  padding: 7px 0;
 }
-.breakdown-row + .breakdown-row { border-top: 1px solid var(--rule-soft); }
+.breakdown-row + .breakdown-row { border-top: 1px solid var(--border); }
 .breakdown-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px; height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
-  margin-left: 2px;
 }
-.breakdown-name {
-  font-size: 0.76rem;
-  font-weight: 500;
-  min-width: 60px;
-}
-.breakdown-bar-wrap {
-  flex: 1;
-  height: 3px;
-  background: var(--rule-soft);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.breakdown-bar {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.breakdown-amt {
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  font-weight: 600;
-  min-width: 68px;
-  text-align: right;
-}
-.breakdown-pct {
-  font-family: var(--mono);
-  font-size: 0.6rem;
-  color: var(--pencil);
-  min-width: 30px;
-  text-align: right;
-}
+.breakdown-name { font-size: 0.78rem; font-weight: 500; min-width: 60px; }
+.breakdown-bar-wrap { flex: 1; height: 5px; background: #F0F2F5; border-radius: 50px; overflow: hidden; }
+.breakdown-bar { height: 100%; border-radius: 50px; transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.breakdown-amt { font-family: var(--mono); font-size: 0.73rem; font-weight: 600; min-width: 70px; text-align: right; }
+.breakdown-pct { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); min-width: 32px; text-align: right; }
 
-/* ── Empty state ── */
+/* ── Empty ── */
 .empty {
   text-align: center;
-  padding: 32px 16px;
-  color: var(--pencil);
+  padding: 28px 16px;
+  color: var(--muted);
   font-size: 0.75rem;
   font-family: var(--mono);
 }
-.empty-icon { font-size: 1.5rem; margin-bottom: 4px; opacity: 0.4; display: block; }
+.empty-icon { font-size: 1.3rem; margin-bottom: 4px; opacity: 0.35; display: block; }
 
 /* ── Toast ── */
 .toast {
@@ -461,89 +469,89 @@ main {
   bottom: 28px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--ink);
-  color: var(--slip);
-  padding: 9px 20px;
+  background: var(--navy);
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: 50px;
   font-size: 0.7rem;
   font-family: var(--mono);
   z-index: 100;
   opacity: 0;
   transition: opacity 0.18s;
   pointer-events: none;
-  letter-spacing: 0.03em;
+  box-shadow: 0 8px 24px rgba(28,33,48,0.3);
 }
 .toast.show { opacity: 1; }
 
 /* ── Responsive ── */
 @media (min-width: 600px) {
-  main { padding: 28px 20px; }
-  header { padding: 28px 28px 24px; }
+  main { padding: 24px 20px; }
+  header { padding: 24px 28px 32px; }
   .form-row { flex-wrap: nowrap; }
-  .hero-total .amount { font-size: 3.4rem; }
+  .hero-card .h-amount { font-size: 1.4rem; }
+  .hero-card.total .h-amount { font-size: 1.8rem; }
 }
-
 @media (max-width: 380px) {
-  .hero-total .amount { font-size: 1.8rem; }
-  .quick-stat .val { font-size: 0.85rem; }
+  .hero-grid { gap: 8px; }
+  .hero-card { padding: 12px; }
+  .hero-card .h-amount { font-size: 1rem; }
+  .hero-card.total .h-amount { font-size: 1.3rem; }
 }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="header-row">
-    <div class="brand">Cat<span>atan</span></div>
+  <div class="header-top">
+    <div class="brand"><b>Catatan</b> Budget</div>
     <div class="month-nav">
-      <button onclick="prevMonth()" aria-label="Sebelumnya">&#8249;</button>
+      <button onclick="prevMonth()">&#8249;</button>
       <span class="month-label" id="monthLabel"></span>
-      <button onclick="nextMonth()" aria-label="Berikutnya">&#8250;</button>
+      <button onclick="nextMonth()">&#8250;</button>
     </div>
   </div>
-  <div class="hero-total">
-    <div class="eyebrow">Total bulan ini</div>
-    <div class="amount" id="heroTotal">Rp 0</div>
-    <div class="budget-track">
-      <div class="rail"><div class="fill" id="budgetBar" style="width:0%"></div></div>
-      <div class="info">
-        <span id="headerSpent">Rp 0 terpakai</span>
-        <span id="headerRemaining">Atur budget dulu</span>
-      </div>
+  <div class="hero-grid">
+    <div class="hero-card total">
+      <div class="h-label">Total bulan ini</div>
+      <div class="h-amount" id="heroTotal">Rp 0</div>
+    </div>
+    <div class="hero-card daily" id="heroDaily">
+      <div class="h-label">Budget harian</div>
+      <div class="h-amount" id="heroDailyAmt">Rp 0</div>
+    </div>
+  </div>
+  <div class="budget-bar-wrap">
+    <div class="budget-bar-fill" id="budgetBar" style="width:0%"></div>
+    <div class="info-row">
+      <span id="headerSpent">Rp 0 terpakai</span>
+      <span id="headerRemaining">Atur budget dulu</span>
     </div>
   </div>
 </header>
 
 <main>
 
-  <!-- Quick stats -->
-  <div class="quick-stats">
-    <div class="quick-stat">
-      <div class="val" id="budgetRemaining">Rp 0</div>
-      <div class="lbl">Sisa budget</div>
-    </div>
-    <div class="quick-stat">
-      <div class="val" id="avgDaily">Rp 0</div>
-      <div class="lbl">Rata / hari</div>
-    </div>
+  <!-- DAILY BUDGET INSIGHT -->
+  <div class="insight-card" id="insightCard">
+    <div class="i-head" id="insightHead">Budget harian</div>
+    <div class="i-big" id="insightBig">Atur budget dulu</div>
+    <div class="i-sub" id="insightSub">Tentukan budget bulanan untuk lihat alokasi harian</div>
   </div>
 
-  <hr class="section-rule">
-
-  <!-- Budget -->
-  <div class="section-eyebrow">Budget</div>
-  <div class="form-slab" style="border:none;padding-top:0">
+  <!-- Budget setting -->
+  <div class="section-label">Budget</div>
+  <div class="form-slab">
     <div class="budget-row">
       <div class="field">
         <label for="budgetInput">Jumlah per bulan</label>
-        <input type="number" id="budgetInput" placeholder="3.000.000" min="0" step="50000">
+        <input type="number" id="budgetInput" placeholder="Contoh: 3.000.000" min="0" step="50000">
       </div>
       <button class="btn btn-sm" onclick="saveBudget()">Simpan</button>
     </div>
   </div>
 
-  <hr class="section-rule">
-
   <!-- Add expense -->
-  <div class="section-eyebrow">Catat sekarang</div>
+  <div class="section-label">Catat pengeluaran</div>
   <div class="form-slab">
     <div class="form-row">
       <div class="field" style="flex:2">
@@ -581,16 +589,14 @@ main {
     </div>
   </div>
 
-  <hr class="section-rule">
-
   <!-- Breakdown -->
-  <div class="section-eyebrow">Rincian</div>
-  <div class="breakdown-list" id="breakdownContainer">
+  <div class="section-label">Rincian kategori</div>
+  <div class="breakdown-slab" id="breakdownContainer">
     <div class="empty"><span class="empty-icon">&#9670;</span>Belum ada data</div>
   </div>
 
   <!-- Expense list -->
-  <div class="section-eyebrow" style="margin-top:24px">Riwayat</div>
+  <div class="section-label">Riwayat</div>
   <div class="pill-strip" id="filterPills">
     <button class="pill active" data-cat="all">Semua</button>
   </div>
@@ -610,9 +616,9 @@ let activeFilter = 'all';
 
 const categories = ['🍔 Makanan', '🚗 Transportasi', '🛒 Belanja', '🎮 Hiburan', '📄 Tagihan', '💊 Kesehatan', '📚 Pendidikan', '📦 Lainnya'];
 const catColors = {
-  '🍔 Makanan': '#D64045', '🚗 Transportasi': '#2962FF', '🛒 Belanja': '#1B8C5E',
-  '🎮 Hiburan': '#E8A838', '📄 Tagihan': '#6C47FF', '💊 Kesehatan': '#D6408A',
-  '📚 Pendidikan': '#0EA5B8', '📦 Lainnya': '#8B8680'
+  '🍔 Makanan': '#D64045', '🚗 Transportasi': '#3B6EF0', '🛒 Belanja': '#1B8C5E',
+  '🎮 Hiburan': '#E8853B', '📄 Tagihan': '#6C47FF', '💊 Kesehatan': '#E0558A',
+  '📚 Pendidikan': '#0BA5B8', '📦 Lainnya': '#7B8296'
 };
 const catLabels = {
   '🍔 Makanan': 'Makanan', '🚗 Transportasi': 'Transportasi', '🛒 Belanja': 'Belanja',
@@ -620,12 +626,12 @@ const catLabels = {
   '📚 Pendidikan': 'Pendidikan', '📦 Lainnya': 'Lainnya'
 };
 
+// ── localStorage ──
 function loadData() {
   expenses = JSON.parse(localStorage.getItem('catatan_expenses') || '[]');
   budgets = JSON.parse(localStorage.getItem('catatan_budgets') || '{}');
   renderAll();
 }
-
 function saveExpenses() { localStorage.setItem('catatan_expenses', JSON.stringify(expenses)); }
 function saveBudgets() { localStorage.setItem('catatan_budgets', JSON.stringify(budgets)); }
 
@@ -646,11 +652,28 @@ function showToast(msg) {
   setTimeout(function(){ t.classList.remove('show'); }, 1800);
 }
 
+// ── Daily budget logic ──
+function calcDaily() {
+  var monthExp = getMonthExpenses();
+  var total = monthExp.reduce(function(s,e){ return s + e.amount; }, 0);
+  var budget = budgets[getMonthKey(currentDate)] || 0;
+  var remaining = budget - total;
+
+  var now = new Date();
+  var daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+  var today = now.getDate();
+  var isCurrentMonth = (getMonthKey(currentDate) === getMonthKey(now));
+  var daysLeft = isCurrentMonth ? (daysInMonth - today + 1) : daysInMonth;
+  var daily = daysLeft > 0 ? Math.floor(remaining / daysLeft) : remaining;
+
+  return { total: total, budget: budget, remaining: remaining, daysLeft: daysLeft, daily: daily, isCurrentMonth: isCurrentMonth };
+}
+
 // ── Render ──
 function renderAll() {
   renderMonthLabel();
   renderHero();
-  renderStats();
+  renderInsight();
   renderBreakdown();
   renderFilters();
   renderExpenses();
@@ -661,40 +684,82 @@ function renderMonthLabel() {
 }
 
 function renderHero() {
-  var monthExp = getMonthExpenses();
-  var total = monthExp.reduce(function(s,e){ return s + e.amount; }, 0);
-  var budget = budgets[getMonthKey(currentDate)] || 0;
-  var pct = budget > 0 ? Math.min(100, Math.round(total / budget * 100)) : 0;
+  var d = calcDaily();
+  var pct = d.budget > 0 ? Math.min(100, Math.round(d.total / d.budget * 100)) : 0;
   var bar = document.getElementById('budgetBar');
-  bar.style.width = (budget > 0 ? pct : 0) + '%';
-  bar.className = 'fill' + (pct > 100 ? ' over' : '');
+  bar.style.width = (d.budget > 0 ? pct : 0) + '%';
+  bar.style.background = pct > 100 ? '#FCA5A5' : pct > 80 ? '#FCD34D' : '#fff';
 
-  document.getElementById('heroTotal').textContent = formatRp(total);
-  document.getElementById('headerSpent').textContent = formatRp(total) + ' terpakai';
-  var rem = budget - total;
-  document.getElementById('headerRemaining').textContent = budget > 0
+  document.getElementById('heroTotal').textContent = formatRp(d.total);
+
+  // Daily budget in hero
+  var dailyEl = document.getElementById('heroDailyAmt');
+  if (d.budget > 0 && d.remaining > 0) {
+    dailyEl.textContent = formatRp(d.daily);
+    dailyEl.style.color = '#5BECAD';
+  } else if (d.budget > 0 && d.remaining <= 0) {
+    dailyEl.textContent = 'Over!';
+    dailyEl.style.color = '#FCA5A5';
+  } else {
+    dailyEl.textContent = '--';
+    dailyEl.style.color = 'rgba(255,255,255,0.5)';
+  }
+
+  document.getElementById('headerSpent').textContent = formatRp(d.total) + ' terpakai';
+  var rem = d.remaining;
+  document.getElementById('headerRemaining').textContent = d.budget > 0
     ? (rem >= 0 ? formatRp(rem) + ' tersisa' : 'Over ' + formatRp(Math.abs(rem)))
     : 'Atur budget dulu';
-}
-
-function renderStats() {
-  var monthExp = getMonthExpenses();
-  var total = monthExp.reduce(function(s,e){ return s + e.amount; }, 0);
-  var budget = budgets[getMonthKey(currentDate)] || 0;
-  var remaining = budget - total;
-  var daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth()+1, 0).getDate();
-  var today = new Date().getDate();
-  var elapsed = (getMonthKey(currentDate) === getMonthKey(new Date())) ? today : daysInMonth;
-  var avg = elapsed > 0 ? Math.round(total / elapsed) : 0;
-
-  var remEl = document.getElementById('budgetRemaining');
-  remEl.textContent = budget > 0 ? formatRp(remaining) : '--';
-  remEl.style.color = budget > 0 && remaining < 0 ? 'var(--red)' : '';
-
-  document.getElementById('avgDaily').textContent = formatRp(avg);
 
   var bi = document.getElementById('budgetInput');
-  if (!bi.value) bi.value = budget || '';
+  if (!bi.value) bi.value = d.budget || '';
+}
+
+function renderInsight() {
+  var d = calcDaily();
+  var card = document.getElementById('insightCard');
+  var head = document.getElementById('insightHead');
+  var big = document.getElementById('insightBig');
+  var sub = document.getElementById('insightSub');
+
+  card.className = 'insight-card';
+  if (d.budget <= 0) {
+    head.textContent = 'Siapkan budget';
+    big.textContent = 'Atur budget dulu';
+    big.style.color = 'var(--muted)';
+    sub.textContent = 'Tentukan budget bulanan di kolom di bawah, lalu lihat alokasi harianmu';
+    return;
+  }
+
+  var spentToday = 0;
+  if (d.isCurrentMonth) {
+    var todayStr = new Date().toISOString().split('T')[0];
+    var monthExp = getMonthExpenses();
+    spentToday = monthExp.filter(function(e){ return e.date === todayStr; }).reduce(function(s,e){ return s + e.amount; }, 0);
+  }
+
+  if (d.remaining <= 0) {
+    card.className = 'insight-card bad';
+    head.textContent = 'Over budget';
+    big.textContent = 'Over ' + formatRp(Math.abs(d.remaining));
+    big.style.color = 'var(--red)';
+    sub.textContent = 'Budget bulanan sudah terlampaui. Kurangi pengeluaran sampai bulan depan.';
+  } else if (d.daily < 20000 && d.budget > 0) {
+    card.className = 'insight-card warn';
+    head.textContent = 'Budget harian tersisa';
+    big.textContent = formatRp(d.daily) + ' / hari';
+    big.style.color = 'var(--orange)';
+    sub.textContent = 'Hemat! Sisa ' + d.daysLeft + ' hari dengan budget ketat. Hari ini sudah keluar ' + formatRp(spentToday) + '.';
+  } else {
+    card.className = 'insight-card good';
+    head.textContent = 'Budget harian tersedia';
+    big.textContent = formatRp(d.daily) + ' / hari';
+    big.style.color = 'var(--green)';
+    var hint = d.isCurrentMonth
+      ? 'Kamu bisa pakai sampai ' + formatRp(d.daily) + ' per hari selama ' + d.daysLeft + ' hari ke depan.'
+      : 'Rata-rata harian untuk bulan ini.';
+    sub.textContent = hint + ' Hari ini: ' + formatRp(spentToday) + '.';
+  }
 }
 
 function renderBreakdown() {
@@ -716,7 +781,7 @@ function renderBreakdown() {
     var amt = byCat[c] || 0;
     if (amt === 0) return;
     var pct = Math.round(amt / total * 100);
-    var color = catColors[c] || '#8B8680';
+    var color = catColors[c] || '#7B8296';
     html += '<div class="breakdown-row">' +
       '<span class="breakdown-dot" style="background:' + color + '"></span>' +
       '<span class="breakdown-name">' + (catLabels[c] || 'Lainnya') + '</span>' +
@@ -777,15 +842,14 @@ function renderExpenses() {
     if (dateKey === today.toISOString().split('T')[0]) headerLabel = 'Hari ini';
     else if (dateKey === yesterday.toISOString().split('T')[0]) headerLabel = 'Kemarin';
     else headerLabel = dt.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
-
     var dayTotal = groups[dateKey].reduce(function(s,e){ return s + e.amount; }, 0);
     html += '<div class="expense-group">' +
       '<div class="expense-date-head">' + headerLabel + '  &middot;  ' + formatRp(dayTotal) + '</div>' +
       '<div class="expense-list">';
-    groups[dateKey].forEach(function(e, idx){
+    groups[dateKey].forEach(function(e){
       var cat = e.category || '📦 Lainnya';
-      var color = catColors[cat] || '#8B8680';
-      html += '<div class="expense-row"' + (idx === 0 ? '' : '') + '>' +
+      var color = catColors[cat] || '#7B8296';
+      html += '<div class="expense-row">' +
         '<span class="expense-dot" style="background:' + color + '"></span>' +
         '<div class="expense-body">' +
           '<div class="e-desc">' + (e.desc || catLabels[cat] || 'Lainnya') + '</div>' +
@@ -806,7 +870,7 @@ function addExpense() {
   var cat = document.getElementById('category').value;
   var dateVal = document.getElementById('date').value || new Date().toISOString().split('T')[0];
   var descRaw = document.getElementById('desc').value.trim();
-  var desc = descRaw || catLabels[cat] || cat.split(' ')[1];
+  var desc = descRaw || catLabels[cat] || '';
   var amount = parseInt(amtEl.value);
   if (!amount || amount <= 0) { showToast('Jumlah belum diisi'); amtEl.focus(); return; }
 
@@ -821,10 +885,6 @@ function addExpense() {
   saveExpenses();
   amtEl.value = ''; document.getElementById('desc').value = '';
   amtEl.focus(); activeFilter = 'all'; loadData();
-  var hero = document.getElementById('heroTotal');
-  hero.classList.remove('tick');
-  void hero.offsetWidth;
-  hero.classList.add('tick');
   showToast('Tercatat');
 }
 
@@ -840,7 +900,7 @@ function saveBudget() {
   var key = getMonthKey(currentDate);
   budgets[key] = val;
   saveBudgets();
-  renderHero(); renderStats();
+  loadData();
   showToast(val > 0 ? 'Budget disimpan' : 'Budget direset');
 }
 

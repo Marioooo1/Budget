@@ -1082,7 +1082,7 @@ function renderExpenses() {
 function addExpense() {
   var amtEl = document.getElementById('amount');
   var cat = document.getElementById('category').value;
-  var dateVal = document.getElementById('date').value || new Date().toISOString().split('T')[0];
+  var dateVal = document.getElementById('dateExp').value || new Date().toISOString().split('T')[0];
   var descRaw = document.getElementById('desc').value.trim();
   var desc = descRaw || catLabels[cat] || '';
   var amount = parseInt(amtEl.value);

@@ -250,6 +250,48 @@ main {
   line-height: 1.4;
 }
 
+/* ── Type tabs ── */
+.type-tabs {
+  display: flex;
+  margin-bottom: 14px;
+  background: #F0F2F5;
+  border-radius: 50px;
+  padding: 3px;
+}
+.type-tab {
+  flex: 1;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--mono);
+  cursor: pointer;
+  background: transparent;
+  color: var(--muted);
+  transition: all 0.15s;
+  letter-spacing: -0.01em;
+}
+.type-tab.active {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.type-tab.income-tab.active {
+  background: var(--green-bg);
+  color: var(--green);
+  box-shadow: 0 1px 3px rgba(27,140,94,0.12);
+}
+
+/* Income row — green styling */
+.income-row .expense-amt { color: var(--green); }
+.income-row .expense-dot { background: var(--green) !important; }
+.income-row .e-meta { color: var(--green); }
+
+/* Hero income variant */
+.hero-card.income-card { background: rgba(27,140,94,0.15); border-color: rgba(27,140,94,0.3); }
+.hero-card.income-card .h-amount { color: #5BECAD; }
+
 /* ── Form slab ── */
 .form-slab {
   background: var(--surface);
@@ -512,13 +554,17 @@ main {
   </div>
   <div class="hero-grid">
     <div class="hero-card total">
-      <div class="h-label">Total bulan ini</div>
+      <div class="h-label">Total keluar</div>
       <div class="h-amount" id="heroTotal">Rp 0</div>
     </div>
-    <div class="hero-card daily" id="heroDaily">
-      <div class="h-label">Budget harian</div>
-      <div class="h-amount" id="heroDailyAmt">Rp 0</div>
+    <div class="hero-card income-card" id="heroIncome">
+      <div class="h-label">Total masuk</div>
+      <div class="h-amount" id="heroIncomeAmt">Rp 0</div>
     </div>
+  </div>
+  <div class="hero-card daily" style="margin-top:12px;background:rgba(27,140,94,0.2);border-color:rgba(27,140,94,0.35);">
+    <div class="h-label">Budget harian</div>
+    <div class="h-amount" id="heroDailyAmt">Rp 0</div>
   </div>
   <div class="budget-bar-wrap">
     <div class="budget-bar-fill" id="budgetBar" style="width:0%"></div>
@@ -550,42 +596,83 @@ main {
     </div>
   </div>
 
-  <!-- Add expense -->
-  <div class="section-label">Catat pengeluaran</div>
+  <!-- Add transaction -->
+  <div class="section-label">Catat transaksi</div>
   <div class="form-slab">
-    <div class="form-row">
-      <div class="field" style="flex:2">
-        <label for="amount">Jumlah (Rp)</label>
-        <input type="number" id="amount" placeholder="0" min="1" autofocus autocomplete="off" inputmode="numeric">
+    <div class="type-tabs">
+      <button class="type-tab active" id="tabExpense" onclick="switchTab('expense')">Pengeluaran</button>
+      <button class="type-tab income-tab" id="tabIncome" onclick="switchTab('income')">Pemasukkan</button>
+    </div>
+    <!-- Expense fields -->
+    <div id="fieldsExpense">
+      <div class="form-row">
+        <div class="field" style="flex:2">
+          <label for="amount">Jumlah (Rp)</label>
+          <input type="number" id="amount" placeholder="0" min="1" autofocus autocomplete="off" inputmode="numeric">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="category">Kategori</label>
+          <select id="category">
+            <option value="🍔 Makanan">Makanan</option>
+            <option value="🚗 Transportasi">Transportasi</option>
+            <option value="🛒 Belanja">Belanja</option>
+            <option value="🎮 Hiburan">Hiburan</option>
+            <option value="📄 Tagihan">Tagihan</option>
+            <option value="💊 Kesehatan">Kesehatan</option>
+            <option value="📚 Pendidikan">Pendidikan</option>
+            <option value="📦 Lainnya">Lainnya</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="dateExp">Tanggal</label>
+          <input type="date" id="dateExp">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="desc">Catatan</label>
+          <input type="text" id="desc" placeholder="Nasi goreng, Bensin..." maxlength="60" autocomplete="off">
+        </div>
+      </div>
+      <div class="form-row">
+        <button class="btn btn-primary" onclick="addExpense()">Tambah Pengeluaran</button>
       </div>
     </div>
-    <div class="form-row">
-      <div class="field">
-        <label for="category">Kategori</label>
-        <select id="category">
-          <option value="🍔 Makanan">Makanan</option>
-          <option value="🚗 Transportasi">Transportasi</option>
-          <option value="🛒 Belanja">Belanja</option>
-          <option value="🎮 Hiburan">Hiburan</option>
-          <option value="📄 Tagihan">Tagihan</option>
-          <option value="💊 Kesehatan">Kesehatan</option>
-          <option value="📚 Pendidikan">Pendidikan</option>
-          <option value="📦 Lainnya">Lainnya</option>
-        </select>
+    <!-- Income fields -->
+    <div id="fieldsIncome" style="display:none">
+      <div class="form-row">
+        <div class="field" style="flex:2">
+          <label for="incomeAmount">Jumlah (Rp)</label>
+          <input type="number" id="incomeAmount" placeholder="0" min="1" autocomplete="off" inputmode="numeric">
+        </div>
       </div>
-      <div class="field">
-        <label for="date">Tanggal</label>
-        <input type="date" id="date">
+      <div class="form-row">
+        <div class="field">
+          <label for="incomeSource">Sumber</label>
+          <select id="incomeSource">
+            <option value="💰 Gaji">Gaji</option>
+            <option value="💼 Freelance">Freelance</option>
+            <option value="🎁 Hadiah">Hadiah</option>
+            <option value="💸 Bonus">Bonus</option>
+            <option value="📦 Lainnya">Lainnya</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="dateInc">Tanggal</label>
+          <input type="date" id="dateInc">
+        </div>
       </div>
-    </div>
-    <div class="form-row">
-      <div class="field">
-        <label for="desc">Catatan</label>
-        <input type="text" id="desc" placeholder="Nasi goreng, Bensin..." maxlength="60" autocomplete="off">
+      <div class="form-row">
+        <div class="field">
+          <label for="incomeDesc">Catatan</label>
+          <input type="text" id="incomeDesc" placeholder="Gaji bulanan, Projek..." maxlength="60" autocomplete="off">
+        </div>
       </div>
-    </div>
-    <div class="form-row">
-      <button class="btn btn-primary" onclick="addExpense()">Tambah</button>
+      <div class="form-row">
+        <button class="btn btn-primary" onclick="addIncome()" style="background:var(--green)">Tambah Pemasukkan</button>
+      </div>
     </div>
   </div>
 
@@ -595,7 +682,7 @@ main {
     <div class="empty"><span class="empty-icon">&#9670;</span>Belum ada data</div>
   </div>
 
-  <!-- Expense list -->
+  <!-- Transaction list -->
   <div class="section-label">Riwayat</div>
   <div class="pill-strip" id="filterPills">
     <button class="pill active" data-cat="all">Semua</button>
@@ -611,8 +698,10 @@ main {
 <script>
 let currentDate = new Date();
 let expenses = [];
+let incomes = [];
 let budgets = {};
 let activeFilter = 'all';
+let activeType = 'expense'; // 'expense' or 'income'
 
 const categories = ['🍔 Makanan', '🚗 Transportasi', '🛒 Belanja', '🎮 Hiburan', '📄 Tagihan', '💊 Kesehatan', '📚 Pendidikan', '📦 Lainnya'];
 const catColors = {
@@ -625,13 +714,18 @@ const catLabels = {
   '🎮 Hiburan': 'Hiburan', '📄 Tagihan': 'Tagihan', '💊 Kesehatan': 'Kesehatan',
   '📚 Pendidikan': 'Pendidikan', '📦 Lainnya': 'Lainnya'
 };
+const incomeSources = ['💰 Gaji', '💼 Freelance', '🎁 Hadiah', '💸 Bonus', '📦 Lainnya'];
+const incomeLabels = {
+  '💰 Gaji': 'Gaji', '💼 Freelance': 'Freelance', '🎁 Hadiah': 'Hadiah',
+  '💸 Bonus': 'Bonus', '📦 Lainnya': 'Lainnya'
+};
 
 // ── Data layer (API or localStorage) ──
 var API = null;
 
 function detectAPI() {
   // Only try API on same origin (not github.io)
-  if (window.location.hostname.includes('github.io')) return false;
+  if (window.location.hostname.includes('github.io')) return Promise.resolve(false);
   return fetch('/api/expenses').then(function(r){
     if (r.ok) { API = window.location.origin; return true; }
     return false;
@@ -640,16 +734,19 @@ function detectAPI() {
 
 function loadData() {
   expenses = JSON.parse(localStorage.getItem('catatan_expenses') || '[]');
+  incomes = JSON.parse(localStorage.getItem('catatan_incomes') || '[]');
   budgets = JSON.parse(localStorage.getItem('catatan_budgets') || '{}');
   if (API) {
     fetch(API + '/api/expenses').then(function(r){ return r.json(); }).then(function(data){
       expenses = data || [];
+      return fetch(API + '/api/incomes');
+    }).then(function(r){ return r.json(); }).then(function(data){
+      incomes = data || [];
       return fetch(API + '/api/budgets');
     }).then(function(r){ return r.json(); }).then(function(data){
       budgets = data || {};
       renderAll();
     })["catch"](function(){
-      // Fallback to localStorage if API fails mid-session
       API = null;
       loadData();
     });
@@ -660,15 +757,12 @@ function loadData() {
 
 function saveExpenses() {
   localStorage.setItem('catatan_expenses', JSON.stringify(expenses));
-  if (API) {
-    // Already saved via API in addExpense/deleteExpense, this is backup
-  }
+}
+function saveIncomes() {
+  localStorage.setItem('catatan_incomes', JSON.stringify(incomes));
 }
 function saveBudgets() {
   localStorage.setItem('catatan_budgets', JSON.stringify(budgets));
-  if (API) {
-    // Already saved via API in saveBudget, this is backup
-  }
 }
 
 function apiPostExpense(exp) {
@@ -680,6 +774,17 @@ function apiPostExpense(exp) {
 
 function apiDeleteExpense(id) {
   return fetch(API + '/api/expenses/' + id, { method: 'DELETE' });
+}
+
+function apiPostIncome(inc) {
+  return fetch(API + '/api/incomes', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({amount: inc.amount, source: inc.source, date: inc.date, desc: inc.desc, monthKey: inc.monthKey})
+  }).then(function(r){ return r.json(); }).then(function(data){ inc.id = data.income.id; });
+}
+
+function apiDeleteIncome(id) {
+  return fetch(API + '/api/incomes/' + id, { method: 'DELETE' });
 }
 
 function apiSaveBudget(month, amount) {
@@ -699,6 +804,10 @@ function getMonthExpenses() {
   var key = getMonthKey(currentDate);
   return expenses.filter(function(e){ return e.monthKey === key; });
 }
+function getMonthIncomes() {
+  var key = getMonthKey(currentDate);
+  return incomes.filter(function(e){ return e.monthKey === key; });
+}
 
 function showToast(msg) {
   var t = document.getElementById('toast');
@@ -709,18 +818,20 @@ function showToast(msg) {
 // ── Daily budget logic ──
 function calcDaily() {
   var monthExp = getMonthExpenses();
-  var total = monthExp.reduce(function(s,e){ return s + e.amount; }, 0);
+  var monthInc = getMonthIncomes();
+  var totalOut = monthExp.reduce(function(s,e){ return s + e.amount; }, 0);
+  var totalIn = monthInc.reduce(function(s,e){ return s + e.amount; }, 0);
   var budget = budgets[getMonthKey(currentDate)] || 0;
-  var remaining = budget - total;
+  var net = budget + totalIn - totalOut;
 
   var now = new Date();
   var daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   var today = now.getDate();
   var isCurrentMonth = (getMonthKey(currentDate) === getMonthKey(now));
   var daysLeft = isCurrentMonth ? (daysInMonth - today + 1) : daysInMonth;
-  var daily = daysLeft > 0 ? Math.floor(remaining / daysLeft) : remaining;
+  var daily = daysLeft > 0 ? Math.floor(net / daysLeft) : net;
 
-  return { total: total, budget: budget, remaining: remaining, daysLeft: daysLeft, daily: daily, isCurrentMonth: isCurrentMonth };
+  return { totalOut: totalOut, totalIn: totalIn, budget: budget, net: net, daysLeft: daysLeft, daily: daily, isCurrentMonth: isCurrentMonth };
 }
 
 // ── Render ──
@@ -739,19 +850,19 @@ function renderMonthLabel() {
 
 function renderHero() {
   var d = calcDaily();
-  var pct = d.budget > 0 ? Math.min(100, Math.round(d.total / d.budget * 100)) : 0;
+  var pct = d.budget > 0 ? Math.min(100, Math.round(d.totalOut / d.budget * 100)) : 0;
   var bar = document.getElementById('budgetBar');
   bar.style.width = (d.budget > 0 ? pct : 0) + '%';
   bar.style.background = pct > 100 ? '#FCA5A5' : pct > 80 ? '#FCD34D' : '#fff';
 
-  document.getElementById('heroTotal').textContent = formatRp(d.total);
+  document.getElementById('heroTotal').textContent = formatRp(d.totalOut);
+  document.getElementById('heroIncomeAmt').textContent = formatRp(d.totalIn);
 
-  // Daily budget in hero
   var dailyEl = document.getElementById('heroDailyAmt');
-  if (d.budget > 0 && d.remaining > 0) {
+  if (d.budget > 0 && d.net > 0) {
     dailyEl.textContent = formatRp(d.daily);
     dailyEl.style.color = '#5BECAD';
-  } else if (d.budget > 0 && d.remaining <= 0) {
+  } else if (d.budget > 0 && d.net <= 0) {
     dailyEl.textContent = 'Over!';
     dailyEl.style.color = '#FCA5A5';
   } else {
@@ -759,10 +870,9 @@ function renderHero() {
     dailyEl.style.color = 'rgba(255,255,255,0.5)';
   }
 
-  document.getElementById('headerSpent').textContent = formatRp(d.total) + ' terpakai';
-  var rem = d.remaining;
+  document.getElementById('headerSpent').textContent = formatRp(d.totalOut) + ' keluar  |  ' + formatRp(d.totalIn) + ' masuk';
   document.getElementById('headerRemaining').textContent = d.budget > 0
-    ? (rem >= 0 ? formatRp(rem) + ' tersisa' : 'Over ' + formatRp(Math.abs(rem)))
+    ? (d.net >= 0 ? formatRp(d.net) + ' tersisa' : 'Over ' + formatRp(Math.abs(d.net)))
     : 'Atur budget dulu';
 
   var bi = document.getElementById('budgetInput');
@@ -786,24 +896,27 @@ function renderInsight() {
   }
 
   var spentToday = 0;
+  var earnedToday = 0;
   if (d.isCurrentMonth) {
     var todayStr = new Date().toISOString().split('T')[0];
     var monthExp = getMonthExpenses();
+    var monthInc = getMonthIncomes();
     spentToday = monthExp.filter(function(e){ return e.date === todayStr; }).reduce(function(s,e){ return s + e.amount; }, 0);
+    earnedToday = monthInc.filter(function(e){ return e.date === todayStr; }).reduce(function(s,e){ return s + e.amount; }, 0);
   }
 
-  if (d.remaining <= 0) {
+  if (d.net <= 0) {
     card.className = 'insight-card bad';
     head.textContent = 'Over budget';
-    big.textContent = 'Over ' + formatRp(Math.abs(d.remaining));
+    big.textContent = 'Over ' + formatRp(Math.abs(d.net));
     big.style.color = 'var(--red)';
-    sub.textContent = 'Budget bulanan sudah terlampaui. Kurangi pengeluaran sampai bulan depan.';
+    sub.textContent = 'Budget bulanan sudah terlampaui meski sudah termasuk pemasukkan ' + formatRp(d.totalIn) + '. Kurangi pengeluaran.';
   } else if (d.daily < 20000 && d.budget > 0) {
     card.className = 'insight-card warn';
     head.textContent = 'Budget harian tersisa';
     big.textContent = formatRp(d.daily) + ' / hari';
     big.style.color = 'var(--orange)';
-    sub.textContent = 'Hemat! Sisa ' + d.daysLeft + ' hari dengan budget ketat. Hari ini sudah keluar ' + formatRp(spentToday) + '.';
+    sub.textContent = 'Hemat! Sisa ' + d.daysLeft + ' hari. Hari ini: keluar ' + formatRp(spentToday) + ', masuk ' + formatRp(earnedToday) + '.';
   } else {
     card.className = 'insight-card good';
     head.textContent = 'Budget harian tersedia';
@@ -812,7 +925,7 @@ function renderInsight() {
     var hint = d.isCurrentMonth
       ? 'Kamu bisa pakai sampai ' + formatRp(d.daily) + ' per hari selama ' + d.daysLeft + ' hari ke depan.'
       : 'Rata-rata harian untuk bulan ini.';
-    sub.textContent = hint + ' Hari ini: ' + formatRp(spentToday) + '.';
+    sub.textContent = hint + ' (termasuk pemasukkan ' + formatRp(d.totalIn) + ')';
   }
 }
 
@@ -850,9 +963,14 @@ function renderBreakdown() {
 function renderFilters() {
   var container = document.getElementById('filterPills');
   var monthExp = getMonthExpenses();
+  var monthInc = getMonthIncomes();
   var usedCats = {};
   monthExp.forEach(function(e){ usedCats[e.category || '📦 Lainnya'] = true; });
+
   var html = '<button class="pill' + (activeFilter === 'all' ? ' active' : '') + '" data-cat="all">Semua</button>';
+  if (monthInc.length > 0) {
+    html += '<button class="pill income-pill' + (activeFilter === '💰 income' ? ' active' : '') + '" data-cat="💰 income" style="' + (activeFilter === '💰 income' ? 'background:var(--green);border-color:var(--green);color:#fff' : 'border-color:var(--green);color:var(--green)') + '">Pemasukkan</button>';
+  }
   categories.forEach(function(c){
     if (usedCats[c]) {
       html += '<button class="pill' + (activeFilter === c ? ' active' : '') + '" data-cat="' + c + '">' + (catLabels[c] || 'Lainnya') + '</button>';
@@ -871,19 +989,34 @@ function renderFilters() {
 function renderExpenses() {
   var container = document.getElementById('expenseContainer');
   var monthExp = getMonthExpenses();
-  var filtered = activeFilter === 'all' ? monthExp : monthExp.filter(function(e){ return (e.category || '📦 Lainnya') === activeFilter; });
-  filtered.sort(function(a,b){ return b.id - a.id; });
+  var monthInc = getMonthIncomes();
 
-  if (filtered.length === 0) {
+  // Build combined list of transactions
+  var items = [];
+  monthExp.forEach(function(e){ items.push({ type: 'expense', data: e }); });
+  monthInc.forEach(function(e){ items.push({ type: 'income', data: e }); });
+
+  // Filter
+  if (activeFilter === '💰 income') {
+    items = items.filter(function(it){ return it.type === 'income'; });
+  } else if (activeFilter !== 'all') {
+    items = items.filter(function(it){ return it.type === 'expense' && (it.data.category || '📦 Lainnya') === activeFilter; });
+  }
+
+  // Sort by id descending
+  items.sort(function(a,b){ return b.data.id - a.data.id; });
+
+  if (items.length === 0) {
     container.innerHTML = '<div class="empty"><span class="empty-icon">&#9670;</span>Belum ada catatan</div>';
     return;
   }
 
+  // Group by date
   var groups = {};
-  filtered.forEach(function(e){
-    var dk = e.date;
+  items.forEach(function(it){
+    var dk = it.data.date;
     if (!groups[dk]) groups[dk] = [];
-    groups[dk].push(e);
+    groups[dk].push(it);
   });
 
   var sortedDates = Object.keys(groups).sort().reverse();
@@ -896,22 +1029,49 @@ function renderExpenses() {
     if (dateKey === today.toISOString().split('T')[0]) headerLabel = 'Hari ini';
     else if (dateKey === yesterday.toISOString().split('T')[0]) headerLabel = 'Kemarin';
     else headerLabel = dt.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
-    var dayTotal = groups[dateKey].reduce(function(s,e){ return s + e.amount; }, 0);
+
+    // Calculate day totals
+    var dayOut = 0, dayIn = 0;
+    groups[dateKey].forEach(function(it){
+      if (it.type === 'expense') dayOut += it.data.amount;
+      else dayIn += it.data.amount;
+    });
+    var dayLabel = '';
+    if (dayOut > 0) dayLabel += 'Keluar ' + formatRp(dayOut);
+    if (dayIn > 0) {
+      if (dayLabel) dayLabel += '  |  ';
+      dayLabel += 'Masuk ' + formatRp(dayIn);
+    }
+
     html += '<div class="expense-group">' +
-      '<div class="expense-date-head">' + headerLabel + '  &middot;  ' + formatRp(dayTotal) + '</div>' +
+      '<div class="expense-date-head">' + headerLabel + '  &middot;  ' + dayLabel + '</div>' +
       '<div class="expense-list">';
-    groups[dateKey].forEach(function(e){
-      var cat = e.category || '📦 Lainnya';
-      var color = catColors[cat] || '#7B8296';
-      html += '<div class="expense-row">' +
-        '<span class="expense-dot" style="background:' + color + '"></span>' +
-        '<div class="expense-body">' +
-          '<div class="e-desc">' + (e.desc || catLabels[cat] || 'Lainnya') + '</div>' +
-          '<div class="e-meta">' + (catLabels[cat] || 'Lainnya') + '</div>' +
-        '</div>' +
-        '<span class="expense-amt">' + formatRp(e.amount) + '</span>' +
-        '<button class="expense-del" onclick="deleteExpense(' + e.id + ')" aria-label="Hapus">&times;</button>' +
-        '</div>';
+
+    groups[dateKey].forEach(function(it){
+      if (it.type === 'income') {
+        var src = it.data.source || '📦 Lainnya';
+        html += '<div class="expense-row income-row">' +
+          '<span class="expense-dot" style="background:var(--green)"></span>' +
+          '<div class="expense-body">' +
+            '<div class="e-desc">' + (it.data.desc || incomeLabels[src] || 'Pemasukkan') + '</div>' +
+            '<div class="e-meta">' + (incomeLabels[src] || 'Lainnya') + '</div>' +
+          '</div>' +
+          '<span class="expense-amt">+' + formatRp(it.data.amount) + '</span>' +
+          '<button class="expense-del" onclick="deleteIncome(' + it.data.id + ')" aria-label="Hapus">&times;</button>' +
+          '</div>';
+      } else {
+        var cat = it.data.category || '📦 Lainnya';
+        var color = catColors[cat] || '#7B8296';
+        html += '<div class="expense-row">' +
+          '<span class="expense-dot" style="background:' + color + '"></span>' +
+          '<div class="expense-body">' +
+            '<div class="e-desc">' + (it.data.desc || catLabels[cat] || 'Lainnya') + '</div>' +
+            '<div class="e-meta">' + (catLabels[cat] || 'Lainnya') + '</div>' +
+          '</div>' +
+          '<span class="expense-amt">' + formatRp(it.data.amount) + '</span>' +
+          '<button class="expense-del" onclick="deleteExpense(' + it.data.id + ')" aria-label="Hapus">&times;</button>' +
+          '</div>';
+      }
     });
     html += '</div></div>';
   });
@@ -975,6 +1135,80 @@ function deleteExpense(id) {
   }
 }
 
+function addIncome() {
+  var amtEl = document.getElementById('incomeAmount');
+  var src = document.getElementById('incomeSource').value;
+  var dateVal = document.getElementById('dateInc').value || new Date().toISOString().split('T')[0];
+  var descRaw = document.getElementById('incomeDesc').value.trim();
+  var desc = descRaw || incomeLabels[src] || '';
+  var amount = parseInt(amtEl.value);
+  if (!amount || amount <= 0) { showToast('Jumlah belum diisi'); amtEl.focus(); return; }
+
+  var inc = {
+    id: Date.now(),
+    amount: amount,
+    source: src,
+    date: dateVal,
+    desc: desc,
+    monthKey: dateVal.substring(0,7)
+  };
+
+  if (API) {
+    apiPostIncome(inc).then(function(){
+      incomes.push(inc);
+      saveIncomes();
+      amtEl.value = ''; document.getElementById('incomeDesc').value = '';
+      amtEl.focus(); activeFilter = 'all'; loadData();
+      showToast('Pemasukkan tercatat');
+    })["catch"](function(e){
+      showToast('Gagal sync, coba lagi');
+      console.error(e);
+    });
+  } else {
+    incomes.push(inc);
+    saveIncomes();
+    amtEl.value = ''; document.getElementById('incomeDesc').value = '';
+    amtEl.focus(); activeFilter = 'all'; loadData();
+    showToast('Pemasukkan tercatat');
+  }
+}
+
+function deleteIncome(id) {
+  if (!confirm('Hapus catatan ini?')) return;
+  if (API) {
+    apiDeleteIncome(id).then(function(){
+      incomes = incomes.filter(function(e){ return e.id !== id; });
+      saveIncomes();
+      loadData(); showToast('Terhapus');
+    })["catch"](function(e){
+      showToast('Gagal sync, coba lagi');
+      console.error(e);
+    });
+  } else {
+    incomes = incomes.filter(function(e){ return e.id !== id; });
+    saveIncomes();
+    loadData(); showToast('Terhapus');
+  }
+}
+
+function switchTab(type) {
+  activeType = type;
+  var tabE = document.getElementById('tabExpense');
+  var tabI = document.getElementById('tabIncome');
+  var fieldsE = document.getElementById('fieldsExpense');
+  var fieldsI = document.getElementById('fieldsIncome');
+
+  if (type === 'expense') {
+    tabE.classList.add('active'); tabI.classList.remove('active');
+    fieldsE.style.display = ''; fieldsI.style.display = 'none';
+    document.getElementById('amount').focus();
+  } else {
+    tabI.classList.add('active'); tabE.classList.remove('active');
+    fieldsI.style.display = ''; fieldsE.style.display = 'none';
+    document.getElementById('incomeAmount').focus();
+  }
+}
+
 function saveBudget() {
   var val = parseInt(document.getElementById('budgetInput').value) || 0;
   var key = getMonthKey(currentDate);
@@ -1004,9 +1238,14 @@ function nextMonth() {
   activeFilter = 'all'; renderAll();
 }
 
-document.getElementById('date').value = new Date().toISOString().split('T')[0];
+var todayStr = new Date().toISOString().split('T')[0];
+document.getElementById('dateExp').value = todayStr;
+document.getElementById('dateInc').value = todayStr;
 document.getElementById('amount').addEventListener('keydown', function(e){
   if (e.key === 'Enter') addExpense();
+});
+document.getElementById('incomeAmount').addEventListener('keydown', function(e){
+  if (e.key === 'Enter') addIncome();
 });
 
 detectAPI().then(function(hasAPI){

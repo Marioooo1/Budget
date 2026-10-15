@@ -2,6 +2,12 @@
 server.py
 data.json
 
+# Local bank-data import files (not published to GitHub Pages — private financial data)
+bca_import.json
+*_pengeluaran.csv
+*_pemasukan.csv
+_build.py
+
 # OS files
 .DS_Store
 Thumbs.db

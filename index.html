@@ -727,6 +727,10 @@ main {
         </div>
       </div>
       <div class="form-row">
+        <button class="btn btn-sm" style="background:var(--green);color:#fff;width:100%" onclick="document.getElementById('importFile').click()">&#8681; Import data bank (JSON)</button>
+        <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importData(this)">
+      </div>
+      <div class="form-row">
         <button class="btn btn-primary" onclick="addExpense()">Tambah Pengeluaran</button>
       </div>
     </div>
@@ -1385,6 +1389,65 @@ function parseSMS() {
   document.getElementById('desc').value = text.substring(0, 60);
   if (activeType !== 'expense') switchTab('expense');
   showToast('Terisi — cek lalu simpan');
+}
+
+// ── Import bank data JSON (from parsed BCA statement) ──
+function importData(input) {
+  var f = input.files && input.files[0];
+  if (!f) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      var data = JSON.parse(ev.target.result);
+      var expArr = Array.isArray(data.expenses) ? data.expenses : [];
+      var incArr = Array.isArray(data.incomes) ? data.incomes : [];
+      var addedE = 0, addedI = 0, skipped = 0;
+      function keyOfExp(e){ return [e.date, e.amount, e.category, String(e.desc||'').trim()].join('|'); }
+      function keyOfInc(i){ return [i.date, i.amount, i.source, String(i.desc||'').trim()].join('|'); }
+      var haveE = {}, haveI = {};
+      expenses.forEach(function(e){ haveE[keyOfExp(e)] = 1; });
+      incomes.forEach(function(i){ haveI[keyOfInc(i)] = 1; });
+
+      expArr.forEach(function(e){
+        if (!e || !(parseInt(e.amount) > 0)) return;
+        var k = keyOfExp(e);
+        if (haveE[k]) { skipped++; return; }   // already exists before import -> skip (avoid re-import dup)
+        expenses.push({
+          id: Date.now() + Math.floor(Math.random()*100000),
+          amount: parseInt(e.amount),
+          category: e.category || '📦 Lainnya',
+          date: e.date || '2026-01-01',
+          desc: e.desc || '',
+          need: e.need === 'Opsional' ? 'Opsional' : 'Perlu',
+          monthKey: e.monthKey || (e.date ? e.date.substring(0,7) : '2026-01')
+        });
+        addedE++;
+      });
+      incArr.forEach(function(i){
+        if (!i || !(parseInt(i.amount) > 0)) return;
+        var k = keyOfInc(i);
+        if (haveI[k]) { skipped++; return; }
+        incomes.push({
+          id: Date.now() + Math.floor(Math.random()*100000),
+          amount: parseInt(i.amount),
+          source: i.source || '📦 Lainnya',
+          date: i.date || '2026-01-01',
+          desc: i.desc || '',
+          monthKey: i.monthKey || (i.date ? i.date.substring(0,7) : '2026-01')
+        });
+        addedI++;
+      });
+      saveExpenses(); saveIncomes();
+      activeFilter = 'all';
+      renderAll();
+      showToast('Impor: +' + addedE + ' pengeluaran, +' + addedI + ' pemasukkan' + (skipped ? ', ' + skipped + ' sudah ada' : ''));
+    } catch(err) {
+      showToast('File tidak valid (JSON)');
+      console.error(err);
+    }
+    input.value = '';
+  };
+  reader.readAsText(f);
 }
 
 function saveBudget() {

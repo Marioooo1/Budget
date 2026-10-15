@@ -364,6 +364,70 @@ main {
 .budget-row { display: flex; gap: 8px; align-items: end; }
 .budget-row .field { flex: 1; }
 
+/* ── Perlu/Opsional toggle ── */
+.need-toggle { display: flex; gap: 6px; }
+.need-btn {
+  flex: 1;
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #F9FAFC;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.need-btn.active.needed  { background: var(--green-bg);  color: var(--green);  border-color: var(--green); }
+.need-btn.active.optional{ background: var(--orange-bg); color: var(--orange); border-color: var(--orange); }
+
+/* optional badge in list */
+.e-opt {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--orange);
+  background: var(--orange-bg);
+  padding: 1px 6px;
+  border-radius: 30px;
+  margin-top: 3px;
+}
+
+/* breakdown optional hint + summary */
+.breakdown-sub { font-family: var(--mono); font-size: 0.6rem; color: var(--orange); margin-top: 2px; }
+.opt-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--orange-bg);
+  border: 1px solid #F6D8C2;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  font-size: 0.75rem;
+  color: var(--ink);
+}
+.opt-summary b { font-family: var(--mono); color: var(--orange); }
+
+/* SMS auto-fill */
+.sms-area {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-family: var(--mono);
+  background: #F9FAFC;
+  color: var(--ink);
+  resize: vertical;
+  min-height: 64px;
+}
+.sms-area:focus { outline: none; border-color: var(--blue); background: #fff; }
+.sms-actions { display: flex; gap: 8px; margin-top: 6px; }
+
 /* ── Filter pills ── */
 .pill-strip {
   display: flex;
@@ -632,8 +696,34 @@ main {
       </div>
       <div class="form-row">
         <div class="field">
+          <label>Kebutuhan</label>
+          <div class="need-toggle">
+            <button type="button" class="need-btn active needed" id="needPerlu" data-need="Perlu" onclick="setNeed('Perlu')">Perlu</button>
+            <button type="button" class="need-btn optional" id="needOpsional" data-need="Opsional" onclick="setNeed('Opsional')">Opsional</button>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
           <label for="desc">Catatan</label>
           <input type="text" id="desc" placeholder="Nasi goreng, Bensin..." maxlength="60" autocomplete="off">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <button class="btn btn-sm" style="background:var(--blue);color:#fff;width:100%" onclick="toggleSMS()">&#9889; Isi otomatis dari SMS bank</button>
+        </div>
+      </div>
+      <div id="smsBox" style="display:none">
+        <div class="form-row">
+          <div class="field">
+            <label for="smsText">Tempel isi SMS bank di sini</label>
+            <textarea class="sms-area" id="smsText" placeholder="Contoh: Pembayaran Rp1.250.000 di Alfamart telah berhasil..."></textarea>
+          </div>
+        </div>
+        <div class="sms-actions">
+          <button class="btn btn-sm" style="background:var(--navy);color:#fff;flex:1" onclick="parseSMS()">Isi otomatis</button>
+          <button class="btn btn-sm" style="background:transparent;color:var(--muted);border:1.5px solid var(--border)" onclick="toggleSMS()">Tutup</button>
         </div>
       </div>
       <div class="form-row">
@@ -702,6 +792,7 @@ let incomes = [];
 let budgets = {};
 let activeFilter = 'all';
 let activeType = 'expense'; // 'expense' or 'income'
+let currentNeed = 'Perlu';  // 'Perlu' or 'Opsional'
 
 const categories = ['🍔 Makanan', '🚗 Transportasi', '🛒 Belanja', '🎮 Hiburan', '📄 Tagihan', '💊 Kesehatan', '📚 Pendidikan', '📦 Lainnya'];
 const catColors = {
@@ -813,6 +904,15 @@ function showToast(msg) {
   var t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
   setTimeout(function(){ t.classList.remove('show'); }, 1800);
+}
+
+// ── Perlu/Opsional toggle ──
+function setNeed(v) {
+  currentNeed = v;
+  var p = document.getElementById('needPerlu');
+  var o = document.getElementById('needOpsional');
+  p.classList.toggle('active', v === 'Perlu');
+  o.classList.toggle('active', v === 'Opsional');
 }
 
 // ── Daily budget logic ──
@@ -938,20 +1038,28 @@ function renderBreakdown() {
     return;
   }
   var byCat = {};
-  categories.forEach(function(c){ byCat[c] = 0; });
+  var byOpt = {};
+  categories.forEach(function(c){ byCat[c] = 0; byOpt[c] = 0; });
+  var totalOpt = 0;
   monthExp.forEach(function(e){
     var cat = e.category || '📦 Lainnya';
     byCat[cat] = (byCat[cat] || 0) + e.amount;
+    if (e.need === 'Opsional') { byOpt[cat] = (byOpt[cat] || 0) + e.amount; totalOpt += e.amount; }
   });
+  var optPct = total > 0 ? Math.round(totalOpt / total * 100) : 0;
   var html = '';
+  if (totalOpt > 0) {
+    html += '<div class="opt-summary"><span>Dari <b>' + formatRp(total) + '</b> keluar, yang <b>opsional</b></span><span><b>' + formatRp(totalOpt) + '</b> (' + optPct + '%)</span></div>';
+  }
   categories.forEach(function(c){
     var amt = byCat[c] || 0;
     if (amt === 0) return;
     var pct = Math.round(amt / total * 100);
     var color = catColors[c] || '#7B8296';
+    var optAmt = byOpt[c] || 0;
     html += '<div class="breakdown-row">' +
       '<span class="breakdown-dot" style="background:' + color + '"></span>' +
-      '<span class="breakdown-name">' + (catLabels[c] || 'Lainnya') + '</span>' +
+      '<span class="breakdown-name">' + (catLabels[c] || 'Lainnya') + (optAmt > 0 ? '<div class="breakdown-sub">opsional ' + formatRp(optAmt) + '</div>' : '') + '</span>' +
       '<span class="breakdown-bar-wrap"><span class="breakdown-bar" style="width:' + pct + '%;background:' + color + '"></span></span>' +
       '<span class="breakdown-amt">' + formatRp(amt) + '</span>' +
       '<span class="breakdown-pct">' + pct + '%</span>' +
@@ -968,6 +1076,10 @@ function renderFilters() {
   monthExp.forEach(function(e){ usedCats[e.category || '📦 Lainnya'] = true; });
 
   var html = '<button class="pill' + (activeFilter === 'all' ? ' active' : '') + '" data-cat="all">Semua</button>';
+  var hasOpt = monthExp.some(function(e){ return e.need === 'Opsional'; });
+  if (hasOpt) {
+    html += '<button class="pill' + (activeFilter === 'opsional' ? ' active' : '') + '" data-cat="opsional" style="' + (activeFilter === 'opsional' ? 'background:var(--orange);border-color:var(--orange);color:#fff' : 'border-color:var(--orange);color:var(--orange)') + '">&#9670; Opsional</button>';
+  }
   if (monthInc.length > 0) {
     html += '<button class="pill income-pill' + (activeFilter === '💰 income' ? ' active' : '') + '" data-cat="💰 income" style="' + (activeFilter === '💰 income' ? 'background:var(--green);border-color:var(--green);color:#fff' : 'border-color:var(--green);color:var(--green)') + '">Pemasukkan</button>';
   }
@@ -999,6 +1111,8 @@ function renderExpenses() {
   // Filter
   if (activeFilter === '💰 income') {
     items = items.filter(function(it){ return it.type === 'income'; });
+  } else if (activeFilter === 'opsional') {
+    items = items.filter(function(it){ return it.type === 'expense' && it.data.need === 'Opsional'; });
   } else if (activeFilter !== 'all') {
     items = items.filter(function(it){ return it.type === 'expense' && (it.data.category || '📦 Lainnya') === activeFilter; });
   }
@@ -1067,6 +1181,7 @@ function renderExpenses() {
           '<div class="expense-body">' +
             '<div class="e-desc">' + (it.data.desc || catLabels[cat] || 'Lainnya') + '</div>' +
             '<div class="e-meta">' + (catLabels[cat] || 'Lainnya') + '</div>' +
+            (it.data.need === 'Opsional' ? '<div class="e-opt">&#9670; opsional</div>' : '') +
           '</div>' +
           '<span class="expense-amt">' + formatRp(it.data.amount) + '</span>' +
           '<button class="expense-del" onclick="deleteExpense(' + it.data.id + ')" aria-label="Hapus">&times;</button>' +
@@ -1094,6 +1209,7 @@ function addExpense() {
     category: cat,
     date: dateVal,
     desc: desc,
+    need: currentNeed,
     monthKey: dateVal.substring(0,7)
   };
 
@@ -1207,6 +1323,68 @@ function switchTab(type) {
     fieldsI.style.display = ''; fieldsE.style.display = 'none';
     document.getElementById('incomeAmount').focus();
   }
+}
+
+// ── SMS auto-fill (paste bank SMS → prefill form) ──
+var SMS_CATEGORY_KEYWORDS = [
+  { cat: '🍔 Makanan',     words: ['makan','warung','minimarket','indomaret','alfamart','gofood','grabfood','nasi','restoran','kopi','cafe','ayam','mie','mart','shopee food'] },
+  { cat: '🚗 Transportasi',words: ['bensin','pertamina','gojek','grab','ojol','taxi','transport','parkir','toll','shell','bbm','bahan bakar','gocar','grabcar'] },
+  { cat: '🛒 Belanja',     words: ['shopee','tokopedia','lazada','blibli','belanja','baju','marketplace','tiktok','online'] },
+  { cat: '🎮 Hiburan',     words: ['game','steam','spotify','netflix','disney','youtube','stream','hiburan','bioskop','cinema'] },
+  { cat: '📄 Tagihan',     words: ['listrik','pln','pdam','air','telkom','indihome','bpjs','token','pulsa','kuota','tagihan','internet','wifi'] },
+  { cat: '💊 Kesehatan',   words: ['apotek','farmasi','klinik','obat','dokter','rumah sakit','kimia farma','kesehatan'] },
+  { cat: '📚 Pendidikan',  words: ['sekolah','les','bimbel','kuliah','pendidikan','buku','kursus','kampus'] }
+];
+
+function guessCategory(text) {
+  var t = text.toLowerCase();
+  for (var i = 0; i < SMS_CATEGORY_KEYWORDS.length; i++) {
+    var group = SMS_CATEGORY_KEYWORDS[i];
+    for (var j = 0; j < group.words.length; j++) {
+      if (t.indexOf(group.words[j]) !== -1) return group.cat;
+    }
+  }
+  return '📦 Lainnya';
+}
+
+function parseRupiah(text) {
+  var m = text.match(/Rp\s*([\d.,]+)/i);
+  if (!m) return null;
+  var n = parseInt(m[1].replace(/\./g, '').replace(/,/g, ''), 10);
+  return isNaN(n) ? null : n;
+}
+
+function parseSMSDate(text) {
+  var m = text.match(/(\d{1,2})\s*\/\s*(\d{1,2})(?:\/\s*(\d{2,4}))?/);
+  if (m) {
+    var d = parseInt(m[1], 10), mo = parseInt(m[2], 10);
+    var y = m[3] ? parseInt(m[3], 10) : new Date().getFullYear();
+    if (mo >= 1 && mo <= 12 && d >= 1 && d <= 31) {
+      return y + '-' + String(mo).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    }
+  }
+  return null;
+}
+
+function toggleSMS() {
+  var box = document.getElementById('smsBox');
+  var show = box.style.display === 'none';
+  box.style.display = show ? '' : 'none';
+  if (show) document.getElementById('smsText').focus();
+}
+
+function parseSMS() {
+  var text = document.getElementById('smsText').value.trim();
+  if (!text) { showToast('Tempel SMS dulu'); return; }
+  var amt = parseRupiah(text);
+  if (amt === null) { showToast('Jumlah tidak ditemukan'); return; }
+  document.getElementById('amount').value = amt;
+  var d = parseSMSDate(text);
+  if (d) document.getElementById('dateExp').value = d;
+  document.getElementById('category').value = guessCategory(text);
+  document.getElementById('desc').value = text.substring(0, 60);
+  if (activeType !== 'expense') switchTab('expense');
+  showToast('Terisi — cek lalu simpan');
 }
 
 function saveBudget() {
